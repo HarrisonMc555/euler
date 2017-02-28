@@ -17,10 +17,11 @@ def pentagonal_num? pn
   # nf = (1.0/2 + Math.sqrt(1.0/4 + 6*pn))/3.0
   nf = (1 + Math.sqrt(1.0 + 24*pn))/6.0
   n = nf.to_i
-  is_pentagonal = n*(3*n-1)/2 == pn
-  # Pentagonal_hash[pn] = is_pentagonal
-  # if is_pentagonal then Pentagonal_list.push(pn) end
-  return is_pentagonal
+  return n == nf
+  # is_pentagonal = n*(3*n-1)/2 == pn
+  # # Pentagonal_hash[pn] = is_pentagonal
+  # # if is_pentagonal then Pentagonal_list.push(pn) end
+  # return is_pentagonal
 end
 
 def pentagonal_nums
