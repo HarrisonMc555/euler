@@ -52,6 +52,12 @@ if false
   p [1,2,3].this_many_range?(2...2) { |x| x < 3 }
 end
 
+def valid_prime_digits(first, last)
+  return ('1'..'9').reject { |d| d.to_i % 2 == 0 } if last
+  return ('1'..'9') if first
+  return ('0'..'9')
+end
+
 def prime_digit_families(num_digits, num_same, first=false)
   # offset = "\t"*(2-num_digits)
   # puts "#{offset}prime_digit_families(#{num_digits},  #{num_same}, #{first})"
@@ -68,11 +74,9 @@ def prime_digit_families(num_digits, num_same, first=false)
         # else
         #   my_digits = ('0'..'9')
         # end
-        my_digits = ('0'..'9')
-        my_digits = ('1'..'9') if first
-        my_digits = ('1'..'9').reject { |d| d.to_i % 2 == 0 } if num_digits == 1
+        digits = valid_prime_digits(first, num_digits == 1)
         # puts "#{offset}using digits #{my_digits}"
-        my_digits.each do |digit|
+        digits.each do |digit|
           prime_digit_families(num_digits - 1, num_same).each { |family_str|
             # puts "#{offset} digit: '#{digit}' + family_str = '#{family_str}'"
             enum.yield(digit+family_str)
@@ -92,3 +96,9 @@ def prime_digit_families(num_digits, num_same, first=false)
 end
 
 p prime_digit_families(3,2,true).to_a
+
+def nums_from_family(family_str)
+  digits = ('0'..'9')
+  digits = ('1'..'9')
+  
+end
