@@ -34,18 +34,61 @@ module Enumerable
 
 end
 
-puts [1,2,3].this_many?(1) { |x| x < 3 }
-puts [1,2,3].this_many?(2) { |x| x < 3 }
-puts [1,2,3].this_many?(3) { |x| x < 3 }
-puts '[1,2,3](1..2)  { |x| x < 3 }'
-p [1,2,3].this_many_range?(1..2) { |x| x < 3 }
-p '[1,2,3](1...2) { |x| x < 3 }'
-p [1,2,3].this_many_range?(1...2) { |x| x < 3 }
-p '[1,2,3](1..3)  { |x| x < 3 }'
-p [1,2,3].this_many_range?(1..3) { |x| x < 3 }
-p '[1,2,3](3..4)  { |x| x < 3 }'
-p [1,2,3].this_many_range?(3..4) { |x| x < 3 }
-p '[1,2,3](3..4)  { |x| x < 3 }'
-p [1,2,3].this_many_range?(2..2) { |x| x < 3 }
-p '[1,2,3](3..4)  { |x| x < 3 }'
-p [1,2,3].this_many_range?(2...2) { |x| x < 3 }
+if false
+  puts [1,2,3].this_many?(1) { |x| x < 3 }
+  puts [1,2,3].this_many?(2) { |x| x < 3 }
+  puts [1,2,3].this_many?(3) { |x| x < 3 }
+  puts '[1,2,3](1..2)  { |x| x < 3 }'
+  p [1,2,3].this_many_range?(1..2) { |x| x < 3 }
+  p '[1,2,3](1...2) { |x| x < 3 }'
+  p [1,2,3].this_many_range?(1...2) { |x| x < 3 }
+  p '[1,2,3](1..3)  { |x| x < 3 }'
+  p [1,2,3].this_many_range?(1..3) { |x| x < 3 }
+  p '[1,2,3](3..4)  { |x| x < 3 }'
+  p [1,2,3].this_many_range?(3..4) { |x| x < 3 }
+  p '[1,2,3](3..4)  { |x| x < 3 }'
+  p [1,2,3].this_many_range?(2..2) { |x| x < 3 }
+  p '[1,2,3](3..4)  { |x| x < 3 }'
+  p [1,2,3].this_many_range?(2...2) { |x| x < 3 }
+end
+
+def prime_digit_families(num_digits, num_same, first=false)
+  # offset = "\t"*(2-num_digits)
+  # puts "#{offset}prime_digit_families(#{num_digits},  #{num_same}, #{first})"
+  Enumerator.new do |enum|
+    # base case, 0 digits left
+    if num_digits == 0
+      enum.yield ""
+    else
+      # only add a non-same digit if we have extra digits to use (if num_digits
+      # == num_same then the rest of the digits need to be the same).
+      if num_same < num_digits
+        # if first
+        #   my_digits = ('1'..'9')
+        # else
+        #   my_digits = ('0'..'9')
+        # end
+        my_digits = ('0'..'9')
+        my_digits = ('1'..'9') if first
+        my_digits = ('1'..'9').reject { |d| d.to_i % 2 == 0 } if num_digits == 1
+        # puts "#{offset}using digits #{my_digits}"
+        my_digits.each do |digit|
+          prime_digit_families(num_digits - 1, num_same).each { |family_str|
+            # puts "#{offset} digit: '#{digit}' + family_str = '#{family_str}'"
+            enum.yield(digit+family_str)
+          }
+        end
+      end
+      # if we have any of the 'same' digits to add, add them
+      if num_same > 0
+        # puts "#{offset}using same digit (*)"
+        prime_digit_families(num_digits - 1, num_same - 1).each { |family_str|
+          # puts "#{offset} digit: '*' + family_str = '#{family_str}'"
+          enum.yield('*'+family_str)
+        }
+      end
+    end
+  end
+end
+
+p prime_digit_families(3,2,true).to_a
