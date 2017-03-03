@@ -122,3 +122,17 @@ puts first_prime_from_family(
        }
      )
 
+nprimes = 8
+(9..Float::INFINITY).lazy.each do |ndigits|
+  puts "#{ndigits} digits"
+  (3..ndigits).reverse_each do |nsame|
+    puts "\t#{nsame} same"
+    family_str = prime_digit_families(ndigits,nsame,true).find { |family_str|
+      family_has_n_primes? nprimes, family_str
+    }
+    if family_str
+      puts first_prime_from_family family_str
+      exit
+    end
+  end
+end
