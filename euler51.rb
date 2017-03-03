@@ -98,7 +98,27 @@ end
 p prime_digit_families(3,2,true).to_a
 
 def nums_from_family(family_str)
-  digits = ('0'..'9')
-  digits = ('1'..'9')
-  
+  digits = valid_prime_digits(family_str[0] == '*', family_str[-1] == '*')
+  digits.map { |digit| family_str.tr('*',digit) }
 end
+
+def family_has_n_primes?(n, family_str)
+  nums_from_family(family_str).this_many?(n) { |s| Prime.prime? s.to_i }
+end
+
+def first_prime_from_family(family_str)
+  nums_from_family(family_str).find { |s| Prime.prime? s.to_i }
+end
+
+p nums_from_family("56**3")
+
+p family_has_n_primes?(7, "56**3")
+
+p first_prime_from_family("56**3")
+
+puts first_prime_from_family(
+       prime_digit_families(5,2,true).find { |family_str|
+         family_has_n_primes? 7, family_str
+       }
+     )
+
