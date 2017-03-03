@@ -20,20 +20,16 @@ module Enumerable
     e = self.each
     been_in_range = false
     loop do
-      begin
-        if block.call e.next
-          count += 1
-          if range.include? count
-            been_in_range = true
-          elsif been_in_range
-            return false
-          end
+      if block.call e.next
+        count += 1
+        if range.include? count
+          been_in_range = true
+        elsif been_in_range
+          return false
         end
-      rescue StopIteration
-        return range.include? count
       end
     end
-    p "got here"
+    return range.include? count
   end
 
 end
