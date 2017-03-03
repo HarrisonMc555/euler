@@ -34,6 +34,7 @@ module Enumerable
 
 end
 
+# testing this_many? and this_many_range?
 if false
   puts [1,2,3].this_many?(1) { |x| x < 3 }
   puts [1,2,3].this_many?(2) { |x| x < 3 }
@@ -53,9 +54,13 @@ if false
 end
 
 def valid_prime_digits(first, last)
-  return ('1'..'9').reject { |d| d.to_i % 2 == 0 } if last
-  return ('1'..'9') if first
-  return ('0'..'9')
+  if last
+    ['1','3','5','7','9']
+  elsif first
+    ('1'..'9')
+  else
+    ('0'..'9')
+  end
 end
 
 def prime_digit_families(num_digits, num_same, first=false)
@@ -95,8 +100,6 @@ def prime_digit_families(num_digits, num_same, first=false)
   end
 end
 
-p prime_digit_families(3,2,true).to_a
-
 def nums_from_family(family_str)
   digits = valid_prime_digits(family_str[0] == '*', family_str[-1] == '*')
   digits.map { |digit| family_str.tr('*',digit) }
@@ -110,23 +113,30 @@ def first_prime_from_family(family_str)
   nums_from_family(family_str).find { |s| Prime.prime? s.to_i }
 end
 
-p nums_from_family("56**3")
+# testing functions
+if false
+  p prime_digit_families(3,2,true).to_a
 
-p family_has_n_primes?(7, "56**3")
+  p nums_from_family("56**3")
 
-p first_prime_from_family("56**3")
+  p family_has_n_primes?(7, "56**3")
 
-puts first_prime_from_family(
-       prime_digit_families(5,2,true).find { |family_str|
-         family_has_n_primes? 7, family_str
-       }
-     )
+  p first_prime_from_family("56**3")
+
+  puts first_prime_from_family(
+         prime_digit_families(5,2,true).find { |family_str|
+           family_has_n_primes? 7, family_str
+         }
+       )
+end
 
 nprimes = 8
-(9..Float::INFINITY).lazy.each do |ndigits|
-  puts "#{ndigits} digits"
-  (3..ndigits).reverse_each do |nsame|
-    puts "\t#{nsame} same"
+mindigits = 5
+minsame = 3
+(mindigits..Float::INFINITY).lazy.each do |ndigits|
+  # puts "#{ndigits} digits"
+  (minsame..ndigits).reverse_each do |nsame|
+    # puts "\t#{nsame} same"
     family_str = prime_digit_families(ndigits,nsame,true).find { |family_str|
       family_has_n_primes? nprimes, family_str
     }
