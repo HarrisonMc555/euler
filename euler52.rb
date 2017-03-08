@@ -12,9 +12,18 @@ def max_valid_same_digits(k,num_digits)
   10**num_digits/k
 end
 
+def find_multiples(k,max_digits)
+  (1..).flat_map { |num_digits|
+    max_valid = max_valid_same_digits(k,num_digits)
+    min_valid = 10**(num_digits-1)
+    (min_valid..max_valid).select { |x| same_digits x, k*x }
+  }
+end
+
 max_digits = 5
 (2..6).each { |k|
-  print "#{k}: "
+  puts "#{k}:"
+  commonxs = []
   samex = (1..max_digits).flat_map { |num_digits|
     max_valid = max_valid_same_digits(k,num_digits)
     min_valid = 10**(num_digits-1)
@@ -23,5 +32,9 @@ max_digits = 5
       same_digits x, k*x
     }
   }
-  p samex
+  samex.each do |x|
+    puts "\t#{k}*#{x}=#{k*x}"
+  end
+  puts ""
+  # p samex
 }
