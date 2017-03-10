@@ -14,6 +14,137 @@ card_map = {"2"  =>  2,
             "K"  => 13,
             "A"  => 14}
 
+class Card
+  @@card_map = {"2"  =>  2,
+                "3"  =>  3,
+                "4"  =>  4,
+                "5"  =>  5,
+                "6"  =>  6,
+                "7"  =>  7,
+                "8"  =>  8,
+                "9"  =>  9,
+                "T"  => 10,
+                "J"  => 11,
+                "Q"  => 12,
+                "K"  => 13,
+                "A"  => 14}
+  attr_reader :value
+  attr_reader :suit
+  def initialize(s)
+    @value = @@card_map[s[0]]
+    @suit = s[1]
+  end
+  def self.StrToValue(value_str)
+    @@card_map[value_str]
+  end
+  def <=> other
+    c = @value <=> other.value
+    unless c == 0
+      c
+    else
+      @suit <=> other.suit
+    end
+  end
+  def show
+    "#@value#@suit"
+  end
+end
+
+c1 = Card.new("4C")
+puts c1.show, c1.value, c1.suit
+c2 = Card.new("3D")
+puts c1.show, c2.show, c1 <=> c2
+puts c2.show, c1.show, c2 <=> c1
+c3 = Card.new("3H")
+puts c3.show, c2.show, c3 <=> c2
+puts c2.show, c3.show, c2 <=> c3
+puts c3.show, c3.show, c3 <=> c3
+puts c3.show, c3.show, c3 <=> c3
+# exit
+
+class Hand
+  attr_reader :cards
+  attr_reader :all_same_suit
+  attr_reader :all_ascending
+  attr_reader :groups
+  attr_reader :score
+  @@straight_flush  = 0
+  @@four_of_a_kind  = 1
+  @@full_house      = 2
+  @@flush           = 3
+  @@stright         = 4
+  @@three_of_a_kind = 5
+  @@two_pairs       = 6
+  @@one_pair        = 7
+  @@high_card       = 8
+  @@code_to_hand_type = { 0 => 'Straight Flush',
+                          1 => 'Four of a Kind',
+                          2 => 'Full House',
+                          3 => 'Flush',
+                          4 => 'Straight',
+                          5 => 'Three of a kind',
+                          6 => 'Two Pairs',
+                          7 => 'One Pair',
+                          8 => 'High Cards'}
+  def initialize(cards)
+    @cards = cards.sort
+    @top_card = @cards[-1]
+    @all_same_suit = Hand.all_same_suit?(@cards)
+    @all_ascending = Hand.all_ascending?(@cards)
+    @groups = Hand.group(@cards)
+    @card_values_by_freq = @groups.map { |value,matching_cards| value }
+    @card_values_by_value = @cards.uniq
+    @score = self.score_hand
+  end
+  def show
+    @cards.map { |card| card.show }.join(", ")
+  end
+  def self.all_same_suit?(cards)
+    cards.map { |card| card.suit }.uniq.length == 1
+  end
+  def self.all_ascending?(cards)
+    cards.sort.each_cons(2).all? { |c1,c2| c2.value == c1.value + 1 }
+  end
+  def self.group(cards)
+    cards.group_by { |card| card.value }.sort_by { |value,matching_cards|
+      matching_cards.length
+    }.reverse
+  end
+  def score_hand
+    if @all_same_suit and @all_ascending
+      return [@@straight_flush, @card_values_by_value]
+    elsif @groups[0].length >= 4
+      return [@@four_of_a_kind, @card_values_by_freq]
+    elsif @groups[0].length == 3 and @groups[1].length == 2
+      return [@@full_house, @card_values_by_freq]
+    elsif @all_same_suit
+      return [@@flush, @card_values_by_value]
+    elsif @all_ascending
+      return [@@straight, @card_values_by_value]
+    elsif @groups[0].length == 3
+      return [@@three_of_a_kind, @card_values_by_freq]
+    elsif @groups[0].length == 2 and @groups[1].length == 2
+      return [@@two_pairs, @card_values_by_freq]
+    elsif @groups[0].length == 2
+      return [@@one_pair, @card_values_by_freq]
+    else
+      return [@@high_card, @card_values_by_value]
+    end
+  end
+  def <=> other
+    self.score <=> other.score
+  end
+end
+
+h1 = Hand.new([c1,c2,c3])
+puts h1.show, h1.all_ascending
+p h1.groups
+
+straight_flush = Hand.new(["TS","JS","QS","KS","AS"].map { |c| Card.new(c) })
+p "show", straight_flush.show, "score", straight_flush.score
+
+exit
+
 def comp_card(card1,card2)
   c = (card1[0] <=> card2[0])
   unless c == 0
