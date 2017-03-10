@@ -15,13 +15,15 @@ card_map = {"2"  =>  2,
             "A"  => 14}
 
 def comp_card(card1,card2)
-  c = card1[0] <=> card2[1]
+  c = (card1[0] <=> card2[0])
   unless c == 0
     c
   else
     card1[1] <=> card2[1]
   end
 end
+
+# puts comp_card([3,"C"],[4,"H"])
 
 def comp_hand(hand1,hand2)
   score1,score2 = [hand1,hand2].map { |hand| hand_score hand }
@@ -51,16 +53,16 @@ def common_cards(hand)
 end
 
 def hand_score(hand)
-  hand.sort! { |c1,c2|
+  sorted_hand = hand.sort { |c1,c2|
     if c1[0] != c2[0]
       c1[0] <=> c2[0]
     else
       c1[1] <=> c2[1]
     end
   }
-  high_card = hand[-1]
-  all_same_suit = all_same_suit? hand
-  all_in_row = all_in_row? hand
+  high_card = sorted_hand[-1]
+  all_same_suit = all_same_suit? sorted_hand
+  all_in_row = all_in_row? sorted_hand
   
   # flush
   return [9,[high_card]] if all_same_suit and all_in_row
@@ -93,6 +95,21 @@ hands = File.open("./p054_poker.txt").map(&:strip).map { |line|
   [cards[0...5], cards[5...10]]
 }
 
-p hands[0]
-p hands[1]
+# p hands[0]
+# p hands[1]
+
+# hands[0][0].each_cons(2) do |c1,c2|
+#   puts "c1: #{c1}, c2: #{c2}, cmp: #{comp_card(c1,c2)}"
+# end
+
+p "first in file:", hands[0][0], hands[0][1]
 p comp_hand(hands[0][0], hands[0][1])
+
+demohand1a = [[5,"H"],[5,"C"],[6,"S"],[7,"S"],[13,"D"]]
+p demohand1a
+demohand1b = [[2,"C"],[3,"S"],[8,"S"],[8,"D"],[10,"D"]]
+p "demo:", demohand1a, demohand1b, comp_hand(demohand1a,demohand1b)
+
+puts hands.count { |hand1,hand2|
+  comp_hand(hand1,hand2) == 1
+}
