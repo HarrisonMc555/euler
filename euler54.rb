@@ -68,11 +68,12 @@ class Hand
   attr_reader :all_ascending
   attr_reader :groups
   attr_reader :score
+  attr_reader :score_type
   @@straight_flush  = 0
   @@four_of_a_kind  = 1
   @@full_house      = 2
   @@flush           = 3
-  @@stright         = 4
+  @@straight        = 4
   @@three_of_a_kind = 5
   @@two_pairs       = 6
   @@one_pair        = 7
@@ -85,16 +86,17 @@ class Hand
                           5 => 'Three of a kind',
                           6 => 'Two Pairs',
                           7 => 'One Pair',
-                          8 => 'High Cards'}
+                          8 => 'High Card'}
   def initialize(cards)
-    @cards = cards.sort
+    @cards = cards.sort.reverse
     @top_card = @cards[-1]
     @all_same_suit = Hand.all_same_suit?(@cards)
     @all_ascending = Hand.all_ascending?(@cards)
     @groups = Hand.group(@cards)
     @card_values_by_freq = @groups.map { |value,matching_cards| value }
-    @card_values_by_value = @cards.uniq
+    @card_values_by_value = @cards.map { |card| card.value }.uniq
     @score = self.score_hand
+    @score_type = @@code_to_hand_type[@score[0]]
   end
   def show
     @cards.map { |card| card.show }.join(", ")
@@ -111,21 +113,23 @@ class Hand
     }.reverse
   end
   def score_hand
+    puts "score_hand {(#{self.show}), (#{self.groups[0].length}), " +
+         "(#{self.groups[1].length}), (#{self.groups})}\n\n---\n"
     if @all_same_suit and @all_ascending
       return [@@straight_flush, @card_values_by_value]
-    elsif @groups[0].length >= 4
+    elsif @groups[0][1].length >= 4
       return [@@four_of_a_kind, @card_values_by_freq]
-    elsif @groups[0].length == 3 and @groups[1].length == 2
+    elsif @groups[0][1].length == 3 and @groups[1][1].length == 2
       return [@@full_house, @card_values_by_freq]
     elsif @all_same_suit
       return [@@flush, @card_values_by_value]
     elsif @all_ascending
       return [@@straight, @card_values_by_value]
-    elsif @groups[0].length == 3
+    elsif @groups[0][1].length == 3
       return [@@three_of_a_kind, @card_values_by_freq]
-    elsif @groups[0].length == 2 and @groups[1].length == 2
+    elsif @groups[0][1].length == 2 and @groups[1][1].length == 2
       return [@@two_pairs, @card_values_by_freq]
-    elsif @groups[0].length == 2
+    elsif @groups[0][1].length == 2
       return [@@one_pair, @card_values_by_freq]
     else
       return [@@high_card, @card_values_by_value]
@@ -140,10 +144,30 @@ h1 = Hand.new([c1,c2,c3])
 puts h1.show, h1.all_ascending
 p h1.groups
 
-straight_flush = Hand.new(["TS","JS","QS","KS","AS"].map { |c| Card.new(c) })
-p "show", straight_flush.show, "score", straight_flush.score
+straight_flush  = Hand.new(["AS","JS","QS","KS","TS"].map { |c| Card.new(c) })
+four_of_a_kind  = Hand.new(["8S","8D","9S","8H","8C"].map { |c| Card.new(c) })
+full_house      = Hand.new(["TS","3D","TH","TC","3S"].map { |c| Card.new(c) })
+flush           = Hand.new(["3S","7S","8S","JS","AS"].map { |c| Card.new(c) })
+straight        = Hand.new(["4C","7D","6S","5H","8C"].map { |c| Card.new(c) })
+three_of_a_kind = Hand.new(["4H","5S","AH","5D","5C"].map { |c| Card.new(c) })
+two_pairs       = Hand.new(["KH","TC","AD","KS","AS"].map { |c| Card.new(c) })
+one_pair        = Hand.new(["TS","JS","TH","2C","QS"].map { |c| Card.new(c) })
+high_card       = Hand.new(["TH","9H","6D","4S","JS"].map { |c| Card.new(c) })
+p straight_flush.show, straight_flush.score, straight_flush.score_type
+p four_of_a_kind.show, four_of_a_kind.score, four_of_a_kind.score_type
+p full_house.show, full_house.score, full_house.score_type
+p flush.show, flush.score, flush.score_type
+p straight.show, straight.score, straight.score_type
+p three_of_a_kind.show, three_of_a_kind.score, three_of_a_kind.score_type
+p two_pairs.show, two_pairs.score, two_pairs.score_type
+p one_pair.show, one_pair.score, one_pair.score_type
+p high_card.show, high_card.score, high_card.score_type
 
-exit
+[straight_flush, four_of_a_kind, full_house, flush, straight, three_of_a_kind,
+ two_pairs, one_pair, high_card].each do |hand|
+  puts "(#{hand.show}), (#{hand.groups.map { |g,cs| [g,cs.length] }}), " + 
+       "(#{hand.score}), (#{hand.score_type}), (#{hand.groups})\n---"
+end
 
 def comp_card(card1,card2)
   c = (card1[0] <=> card2[0])
