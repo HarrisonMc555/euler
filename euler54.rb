@@ -1,19 +1,5 @@
 #!/usr/bin/env ruby
 
-card_map = {"2"  =>  2,
-            "3"  =>  3,
-            "4"  =>  4,
-            "5"  =>  5,
-            "6"  =>  6,
-            "7"  =>  7,
-            "8"  =>  8,
-            "9"  =>  9,
-            "T"  => 10,
-            "J"  => 11,
-            "Q"  => 12,
-            "K"  => 13,
-            "A"  => 14}
-
 class Card
   include Comparable
   @@card_map = {"2"  =>  2,
@@ -29,6 +15,19 @@ class Card
                 "Q"  => 12,
                 "K"  => 13,
                 "A"  => 14}
+  @@card_rmap = { 2  => "2",
+                  3  => "3",
+                  4  => "4",
+                  5  => "5",
+                  6  => "6",
+                  7  => "7",
+                  8  => "8",
+                  9  => "9",
+                  10 => "T",
+                  11 => "J",
+                  12 => "Q",
+                  13 => "K",
+                  14 => "A"}
   attr_reader :value
   attr_reader :suit
   def initialize(s)
@@ -47,7 +46,7 @@ class Card
     end
   end
   def show
-    "#@value#@suit"
+    "#{@@card_rmap[@value]}#@suit"
   end
 end
 
@@ -70,32 +69,33 @@ class Hand
   attr_reader :groups
   attr_reader :score
   attr_reader :score_type
-  @@straight_flush  = 0
-  @@four_of_a_kind  = 1
-  @@full_house      = 2
-  @@flush           = 3
+  @@straight_flush  = 8
+  @@four_of_a_kind  = 7
+  @@full_house      = 6
+  @@flush           = 5
   @@straight        = 4
-  @@three_of_a_kind = 5
-  @@two_pairs       = 6
-  @@one_pair        = 7
-  @@high_card       = 8
-  @@code_to_hand_type = { 0 => 'Straight Flush',
-                          1 => 'Four of a Kind',
-                          2 => 'Full House',
-                          3 => 'Flush',
+  @@three_of_a_kind = 3
+  @@two_pairs       = 2
+  @@one_pair        = 1
+  @@high_card       = 0
+  @@code_to_hand_type = { 8 => 'Straight Flush',
+                          7 => 'Four of a Kind',
+                          6 => 'Full House',
+                          5 => 'Flush',
                           4 => 'Straight',
-                          5 => 'Three of a kind',
-                          6 => 'Two Pairs',
-                          7 => 'One Pair',
-                          8 => 'High Card'}
+                          3 => 'Three of a kind',
+                          2 => 'Two Pairs',
+                          1 => 'One Pair',
+                          0 => 'High Card'}
   def initialize(cards)
     @cards = cards.sort.reverse
     @top_card = @cards[-1]
     @all_same_suit = Hand.all_same_suit?(@cards)
+    # p "after all_same_suit?", @cards, @all_same_suit, "---"
     @all_ascending = Hand.all_ascending?(@cards)
     @groups = Hand.group(@cards)
     @card_values_by_freq = @groups.map { |value,matching_cards| value }
-    @card_values_by_value = @cards.map { |card| card.value }.uniq
+    @card_values_by_value = @cards.map { |card| card.value }
     @score = self.score_hand
     @score_type = @@code_to_hand_type[@score[0]]
   end
@@ -103,34 +103,48 @@ class Hand
     @cards.map { |card| card.show }.join(", ")
   end
   def self.all_same_suit?(cards)
+    # p "all_same_suit?", cards, "#{cards.map { |card| card.suit }.uniq}"
     cards.map { |card| card.suit }.uniq.length == 1
   end
   def self.all_ascending?(cards)
     cards.sort.each_cons(2).all? { |c1,c2| c2.value == c1.value + 1 }
   end
   def self.group(cards)
-    cards.group_by { |card| card.value }.sort_by { |value,matching_cards|
+    cards.sort.group_by { |card| card.value }.sort_by { |value,matching_cards|
       matching_cards.length
     }.reverse
   end
   def score_hand
+    # puts "score_hand: #{self.show}"
+    # puts "\tall_same_suit: #@all_same_suit"
+    # puts "\tall_ascending: #@all_ascending"
+    # puts "\tgroup lengths: #{@groups.map { |g,cs| cs.length }}"
     if @all_same_suit and @all_ascending
+      # puts "\t\tstraight flush"
       return [@@straight_flush, @card_values_by_value]
     elsif @groups[0][1].length >= 4
+      # puts "\t\tfour_of_a_kind"
       return [@@four_of_a_kind, @card_values_by_freq]
     elsif @groups[0][1].length == 3 and @groups[1][1].length == 2
+      # puts "\t\tfull_house"
       return [@@full_house, @card_values_by_freq]
     elsif @all_same_suit
+      # puts "\t\tflush"
       return [@@flush, @card_values_by_value]
     elsif @all_ascending
+      # puts "\t\tstraight"
       return [@@straight, @card_values_by_value]
     elsif @groups[0][1].length == 3
+      # puts "\t\tthree_of_a_kind"
       return [@@three_of_a_kind, @card_values_by_freq]
     elsif @groups[0][1].length == 2 and @groups[1][1].length == 2
+      # puts "\t\ttwo_pairs"
       return [@@two_pairs, @card_values_by_freq]
     elsif @groups[0][1].length == 2
+      # puts "\t\tone_pair"
       return [@@one_pair, @card_values_by_freq]
     else
+      # puts "\t\thigh_card"
       return [@@high_card, @card_values_by_value]
     end
   end
@@ -153,23 +167,76 @@ end
 #               three_of_a_kind, two_pairs, one_pair, high_card]
 # test_hands.each do |hand|
 #   puts "(#{hand.show}), (#{hand.groups.map { |g,cs| [g,cs.length] }}), " + 
-#        "(#{hand.score}), (#{hand.score_type}), (#{hand.groups})\n---"
+#        "(#{hand.score}), (#{hand.score_type})\n---"
 # end
 
 # test_hands.each_cons(2) do |hand1,hand2|
 #   puts hand1 <=> hand2
 # end
 
+# demo1astr = "5H 5C 6S 7S KD"
+# demo1bstr = "2C 3S 8S 8D TD"
+# demo2astr = "5D 8C 9S JS AC"
+# demo2bstr = "2C 5C 7D 8S QH"
+# demo3astr = "2D 9C AS AH AC"
+# demo3bstr = "3D 6D 7D TD QD"
+# demo4astr = "4D 6S 9H QH QC"
+# demo4bstr = "3D 6D 7H QD QS"
+# demo5astr = "2H 2D 4C 4D 4S"
+# demo5bstr = "3C 3D 3S 9S 9D"
+
+# demo1a = Hand.new(demo1astr.split.map { |s| Card.new(s) })
+# demo1b = Hand.new(demo1bstr.split.map { |s| Card.new(s) })
+# demo2a = Hand.new(demo2astr.split.map { |s| Card.new(s) })
+# demo2b = Hand.new(demo2bstr.split.map { |s| Card.new(s) })
+# demo3a = Hand.new(demo3astr.split.map { |s| Card.new(s) })
+# demo3b = Hand.new(demo3bstr.split.map { |s| Card.new(s) })
+# demo4a = Hand.new(demo4astr.split.map { |s| Card.new(s) })
+# demo4b = Hand.new(demo4bstr.split.map { |s| Card.new(s) })
+# demo5a = Hand.new(demo5astr.split.map { |s| Card.new(s) })
+# demo5b = Hand.new(demo5bstr.split.map { |s| Card.new(s) })
+
+# demopairs = [[demo1a,demo1b],[demo2a,demo2b],[demo3a,demo3b],[demo4a,demo4b],
+#              [demo5a,demo5b]]
+
+# demopairs.each do |hand1,hand2|
+#   print "#{hand1.show} (#{hand1.score_type}) | " +
+#         "#{hand2.show} (#{hand2.score_type}) | Player"
+#   if hand1 > hand2
+#     print "1\n"
+#   else
+#     print "2\n"
+#   end
+# end
+# exit
 
 hands = File.open("./p054_poker.txt").map(&:strip).map { |line|
   cards = line.split
   # cards.map! { |card|
   #   [card_map[card[0]], card[-1]]
   # }
-  [Hand.new(cards[0...5].map { |c| Card.new(c) }),
-   Hand.new(cards[5...10].map { |c| Card.new(c) })]
+  [Hand.new(cards[0...5].map { |s| Card.new(s) }),
+   Hand.new(cards[5...10].map { |s| Card.new(s) })]
 }
 
+# hands = hands[0...20]
+
+# hands.each do |hand1,hand2|
+#   h1str = "#{hand1.show} (#{hand1.score_type}, #{hand1.score[1]})".ljust(52)
+#   h2str = "#{hand2.show} (#{hand2.score_type}, #{hand2.score[1]})".ljust(52)
+#   if hand1 > hand2
+#     pstr = "Player 1"
+#   else
+#     pstr = "Player 2"
+#   end
+#   puts "#{h1str} <#{pstr}>  #{h2str}"
+#   # print "#{hand1.show} (#{hand1.score_type}) | " +
+#   #       "#{hand2.show} (#{hand2.score_type}) | Player"
+#   if hand1 == hand2
+#     puts "----------------------------------ERROR-----------------------"
+#   end
+# end
+  
 puts hands.count { |hand1,hand2|
   hand1 > hand2
 }
