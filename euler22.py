@@ -21,24 +21,15 @@ def get_sum_scores(names):
     return sum(scores)
 
 
-def read_names(filename):
-    with open(filename) as file:
-        text = file.read()
-        names = []
-        for line in csv.reader([text], skipinitialspace=True):
-            for name in line:
-                names.append(name)
-        return names
+# def read_names(filename):
+def read_names(text):
+    return [name for l in csv.reader([text], skipinitialspace=True) \
+            for name in l]
     
 
 def main():
-
-    args = sys.argv[1:]
-    if args:
-        names = read_names(args[0])
-        print get_sum_scores(sorted(names))
-    else:
-        print 'usage: <name_file>'
+    names = read_names(sys.stdin.read())
+    print get_sum_scores(sorted(names))
 
 
 if __name__ == '__main__':
