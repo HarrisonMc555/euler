@@ -1,8 +1,5 @@
 #!/usr/bin/env ruby
 
-enc_msg = gets.split(',').map(&:to_i)
-# enc_msg = gets.each_char.map(&:ord)
-
 def valid_charn?(cn)
   cn >= 32 or cn == 10 # newline
 end
@@ -12,6 +9,17 @@ def decrypt(enc_msg,key)
     cs.zip(key).map { |cn,kn| cn ^ kn }
   }.flatten
 end
+
+# this is normally what you do for the Project Euler style problem
+enc_msg = gets.split(',').map(&:to_i)
+
+# uncomment this if you want to simply decode the input and print it out decoded
+# enc_msg = STDIN.read.each_char.map(&:ord)
+# key = (1..3).map { |_| ('a'..'z').to_a.sample }.map(&:ord)
+# key = 'xyz'.each_char.map(&:ord)
+# puts decrypt(enc_msg,key).map(&:to_s).join(',')
+# puts key.map(&:chr).join('')
+# exit
 
 letter_ords = ('a'..'z').map(&:ord)
 for c1 in letter_ords
