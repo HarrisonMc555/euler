@@ -3,15 +3,23 @@
 require 'prime'
 require 'pp'
 
-def concat(x,y)
-  (x.to_s+y.to_s).to_i
+# Concatenates the numbers x and y
+def concat(x, y)
+  (x.to_s + y.to_s).to_i
 end
 
-def concats_prime(ns,x)
-  ns.all? { |n| Prime.prime? concat(n,x) and Prime.prime? concat(x,n) }
+
+# Sees if the number x is prime when concatenated with every number in ns
+def concats_prime(ns, x)
+  ns.all? { |n| Prime.prime? concat(n, x) and Prime.prime? concat(x, n) }
 end
 
-def add_concats_prime(h,ns)
+
+# For all primes in ns, adds all the primes that can concatenate with it to form
+# more primes into the hash h. After this functions, all the primes that can
+# concatenate with a number to form more primes are in lists that the hash
+# points to.
+def add_concats_prime(h, ns)
   for prime1, i in ns.each_with_index
     xs = h[prime1] + [prime1]
     for prime2 in ns
@@ -23,16 +31,24 @@ def add_concats_prime(h,ns)
   h
 end
 
+
+# Group primes by modulus 3
 gs = Prime.take_while { |p| p < 10**3 }.drop(2).group_by { |x| x % 3 }
 
+
+# No primes are divisible by three, these are grouped by whether they're 1 mod 3
+# or 2 mod 3
 gs1, gs2 = gs[1], gs[2]
 
 p gs1[0...10]
 p gs2[0...10]
 
-pairs = Hash.new { |h,k| [] }
-pairs = add_concats_prime(pairs,gs1)
-pairs = add_concats_prime(pairs,gs2)
+
+# Initialize a new hash that maps from prime numbers to a list of numbers that
+# concatenate with it to form more primes
+pairs = Hash.new { |h, k| [] }
+pairs = add_concats_prime(pairs, gs1)
+pairs = add_concats_prime(pairs, gs2)
 p pairs
 
 exit
@@ -76,7 +92,7 @@ exit
 
 def find_concats(nleft, nlistsandprimes)
   # puts "nleft: #{nleft}"
-  # puts "nlists: #{nlistsandprimes[0...5].map { |ns,ps| [ns[0...5],ps[0...5]]}}"
+  # puts "nlists: #{nlistsandprimes[0...5].map { |ns, ps| [ns[0...5], ps[0...5]]}}"
   # puts "nlistsandprimes: " +
   #      "#{nlistsandprimes[0...5].map {|nlandps| nlandps[0][0...5]}}"
   return nlistsandprimes if nleft == 0
@@ -84,12 +100,12 @@ def find_concats(nleft, nlistsandprimes)
     nlist, primes = nlistandprimes
     # puts "\tnlist: #{nlist[0...10]}"
     # puts "\tprimes: #{primes[0...10]}"
-    newprimes = primes.select { |p| concats_prime(nlist,p) }
+    newprimes = primes.select { |p| concats_prime(nlist, p) }
     # puts "\tnewprimes: #{newprimes[0...10]}"
     # puts "\t"+"-"*40
     newprimes.map { |p| [nlist + [p], newprimes] }
   }
-  find_concats(nleft-1, nlistsandprimes)
+  find_concats(nleft - 1, nlistsandprimes)
 end
 
 gs = Prime.take_while { |p| p < 10**4 }.drop(2).group_by { |x| x % 3 }
@@ -97,18 +113,31 @@ gs = Prime.take_while { |p| p < 10**4 }.drop(2).group_by { |x| x % 3 }
 gs1, gs2 = gs[1], gs[2]
 
 # primes = Prime.take_while { |p| p < 10**5 }
-nlists = find_concats(4, [[[],[3]+gs1]])
+nlists = find_concats(4, [[[], [3] + gs1]])
 puts nlists.min_by { |ns| ns.reduce(&:+) }
-nlists = find_concats(4, [[[],[3]+gs2]])
+nlists = find_concats(4, [[[], [3] + gs2]])
 puts nlists.min_by { |ns| ns.reduce(&:+) }
 
 exit
 
 puts gs1.combination(4).select { |xs|
   p xs
-  tmp = xs.permutation(2).all? { |x1,x2| Prime.prime?((x1.to_s+x2.to_s).to_i) }
+  tmp = xs.permutation(2).all? { |x1, x2| Prime.prime?((x1.to_s + x2.to_s).to_i) }
   if tmp
     puts "xs: #{xs}"
   end
   tmp
 }
+
+
+
+################################################################################
+
+def digits(x, base=10)
+  ds = []
+  while x > 0
+    ds << x % base
+    x /= base
+  end
+  ds.reverse
+end
