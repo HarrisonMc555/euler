@@ -1,5 +1,41 @@
 #!/usr/bin/env ruby
 
+################################################################################
+## DESCRIPTION #################################################################
+
+# The primes 3, 7, 109, and 673, are quite remarkable. By taking any two primes
+# and concatenating them in any order the result will always be prime. For
+# example, taking 7 and 109, both 7109 and 1097 are prime. The sum of these four
+# primes, 792, represents the lowest sum for a set of four primes with this
+# property.
+
+# Find the lowest sum for a set of five primes for which any two primes
+# concatenate to produce another prime.
+
+################################################################################
+## THOUGHTS ####################################################################
+
+###################
+# Digit Sum Mod 3 #
+###################
+
+# The sum of the digits of any prime number (besides 3) are never 0 mod 3, they
+# are always either 1 mod 3 or 2 mod 3. If we concatenate two numbers, then the
+# sums of their digits will also add. Since we're only ever concatenating two
+# prime numbers, we know that they must either both be 1 mod 3 or both be 2 mod
+# 3. If you concatenated a number whose digit sum is 1 mod 3 and one whose digit
+# sum is 2 mod 3, you would get a numbers whose digit sum is 0 mod 3, which will
+# not be a prime number.
+
+# Thus, we can categorize our prime numbers by their digit sum mod 3 and only
+# try them together.
+
+# Keep in mind that 3 is a viable number to pair with any number from either
+# group, since it will not change the digit sum mod 3.
+
+################################################################################
+
+
 require 'prime'
 require 'pp'
 
