@@ -56,11 +56,13 @@ end
 # concatenate with a number to form more primes are in lists that the hash
 # points to.
 def add_concats_prime(h, ns)
-  for prime1, i in ns.each_with_index
+  for prime1 in ns
     xs = h[prime1] + [prime1]
     for prime2 in ns
       if concats_prime(xs, prime2)
-        h[prime1] << prime2
+        # h[prime1].push(prime2)
+        # h[prime1] << prime2
+        h[prime1] <<= prime2
       end
     end
   end
@@ -86,6 +88,20 @@ pairs = Hash.new { |h, k| [] }
 pairs = add_concats_prime(pairs, gs1)
 pairs = add_concats_prime(pairs, gs2)
 p pairs
+
+
+triplets = []
+for prime1, matches in pairs
+  for prime2 in matches
+    primes1and2 = [prime1, prime2]
+    for prime3 in matches.reject { |x| x == prime2 }
+      if concats_prime(primes1and2, prime3)
+        triplets << [prime1, prime2, prime3]
+      end
+    end
+  end
+end
+
 
 exit
 
